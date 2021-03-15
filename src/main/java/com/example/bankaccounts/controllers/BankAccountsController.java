@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bankaccounts.model.Account;
+import com.example.bankaccounts.model.TransactionsDTO;
 import com.example.bankaccounts.services.BankAccountsService;
 
 @RestController
@@ -23,26 +24,32 @@ public class BankAccountsController {
 
 	@Autowired
 	BankAccountsService bankAccountsService;
-	
+
 	@GetMapping("/{id}")
 	public Account getById(@PathVariable("id") long id) {
 		return bankAccountsService.get(id);
 	}
-	
+
 	@GetMapping
 	public List<Account> getAll() {
 		return bankAccountsService.get();
 	}
-	
-	@PostMapping 
+
+	@PostMapping
 	public ResponseEntity<Account> createUpdate(@RequestBody Account account) {
 		account = bankAccountsService.createUpdate(account);
 		return new ResponseEntity<Account>(account, new HttpHeaders(), HttpStatus.OK);
 	}
-	
-	@DeleteMapping
+
+	@DeleteMapping("/{id}")
 	public ResponseEntity<Object> deleteById(@PathVariable("id") long id) {
 		bankAccountsService.deleteById(id);
 		return ResponseEntity.ok().build();
+	}
+
+	@PostMapping("/{id}/transactions")
+	public ResponseEntity<Account> transactions(@PathVariable("id") long id, @RequestBody TransactionsDTO transactionsDTO) {
+		Account account = bankAccountsService.createTransaction(id, transactionsDTO);
+		return new ResponseEntity<Account>(account, new HttpHeaders(), HttpStatus.OK);
 	}
 }
