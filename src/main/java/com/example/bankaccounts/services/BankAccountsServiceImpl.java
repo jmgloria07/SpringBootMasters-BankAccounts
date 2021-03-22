@@ -4,78 +4,96 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.bankaccounts.model.Account;
-import com.example.bankaccounts.model.TransactionsDTO;
+import com.example.bankaccounts.model.Transaction;
 import com.example.bankaccounts.model.exceptions.InsufficientFundsAvailable;
 import com.example.bankaccounts.model.exceptions.RecordNotFoundException;
 import com.example.bankaccounts.repositories.BankAccountsRepository;
+import com.example.bankaccounts.repositories.TransactionsRepository;
 import com.example.bankaccounts.utils.AccountUtils;
 
 @Service
 public class BankAccountsServiceImpl implements BankAccountsService {
 
 	@Autowired
-	BankAccountsRepository repository;
+	BankAccountsRepository bankAccountsRepository;
+	
+	@Autowired
+	TransactionsRepository transactionsRepository;
 
 	@Override
 	public Account get(long id) {
-		return repository.findById(id).orElseThrow(RecordNotFoundException::new);
+		return bankAccountsRepository.findById(id).orElseThrow(RecordNotFoundException::new);
 	}
 
 	@Override
 	public List<Account> get() {
-		return repository.findAll();
+		return bankAccountsRepository.findAll();
 	}
 
 	@Override
 	public Account createUpdate(Account entity) {
 		if (entity.getId() != null) {
-			Optional<Account> foundEntity = repository.findById(entity.getId());
+			Optional<Account> foundEntity = bankAccountsRepository.findById(entity.getId());
 			boolean isPresent = foundEntity.isPresent();
 			if (isPresent) {
 				Account updatedEntity = foundEntity.get();
 				updatedEntity.setName(entity.getName());
-				updatedEntity = repository.save(updatedEntity);
+				updatedEntity = bankAccountsRepository.save(updatedEntity);
 				return updatedEntity;
 			} else {
 				AccountUtils.accountInitValues(entity);
-				entity = repository.save(entity);
+				entity = bankAccountsRepository.save(entity);
 				return entity;
 			}
 		} else {
 			AccountUtils.accountInitValues(entity);
-			entity = repository.save(entity);
+			entity = bankAccountsRepository.save(entity);
 			return entity;
 		}
 	}
 
 	@Override
 	public void deleteById(long id) {
-		repository.findById(id).orElseThrow(RecordNotFoundException::new);
-		repository.deleteById(id);
+		bankAccountsRepository.findById(id).orElseThrow(RecordNotFoundException::new);
+		bankAccountsRepository.deleteById(id);
 	}
 
 	@Override
-	public Account createTransaction(long id, TransactionsDTO transactionsDTO) {
-		Optional<Account> acc = repository.findById(id);
+	public Account createTransaction(long id, Transaction transaction) {
+		Optional<Account> acc = bankAccountsRepository.findById(id);
 		Account account = acc.get();
-		switch (transactionsDTO.getType().toUpperCase()) {
+		switch (transaction.getType().toUpperCase()) {
 		case "DEPOSIT":
-			account.setBalance(Double.sum(account.getBalance(), transactionsDTO.getAmount()));
+			account.setBalance(Double.sum(account.getBalance(), transaction.getAmount()));
 			break;
 		case "WITHDRAW":
-			if (transactionsDTO.getAmount() > account.getBalance()) {
+			if (transaction.getAmount() > account.getBalance()) {
 				throw new InsufficientFundsAvailable();
 			}
-			double diff = account.getBalance() - transactionsDTO.getAmount();
+			double diff = account.getBalance() - transaction.getAmount();
 			account.setBalance(diff);
 			break;
 		}
 		AccountUtils.computeAccountType(account);
-		Account returnAccount = repository.save(account);
+		transactionsRepository.save(transaction);
+		Account returnAccount = bankAccountsRepository.save(account);
 		return returnAccount;
+	}
+
+	@Override
+	public Page<Account> pageableGet(Pageable pageable) {
+		return bankAccountsRepository.findAll(pageable);
+	}
+
+	@Override
+	public Page<Transaction> getAllTransactions(long accountId, Pageable pageable) {
+		//TODO filter transactions by account id
+		return transactionsRepository.findAll(pageable);
 	}
 
 }

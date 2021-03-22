@@ -1,13 +1,17 @@
 package com.example.bankaccounts.model;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -45,6 +49,9 @@ public abstract class Account {
 
 	@JsonIgnore
 	private LocalDate createdDate;
+	
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "account")
+	private Set<Transaction> transactions;
 
 	public Account() {
 
