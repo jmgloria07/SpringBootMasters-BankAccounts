@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,7 +21,7 @@ import com.example.bankaccounts.model.Account;
 import com.example.bankaccounts.services.BankAccountsService;
 
 @RestController
-@RequestMapping("accounts")
+@RequestMapping("/accounts")
 public class BankAccountsController {
 
 	@Autowired
@@ -43,6 +44,12 @@ public class BankAccountsController {
 	
 	@PostMapping
 	public ResponseEntity<Account> createUpdate(@RequestBody Account account) {
+		account = bankAccountsService.createUpdate(account);
+		return new ResponseEntity<Account>(account, new HttpHeaders(), HttpStatus.OK);
+	}
+	
+	@PutMapping
+	public ResponseEntity<Account> updateAccount(@RequestBody Account account) {
 		account = bankAccountsService.createUpdate(account);
 		return new ResponseEntity<Account>(account, new HttpHeaders(), HttpStatus.OK);
 	}

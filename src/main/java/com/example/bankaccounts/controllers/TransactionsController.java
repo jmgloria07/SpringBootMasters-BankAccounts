@@ -18,7 +18,7 @@ import com.example.bankaccounts.model.Transaction;
 import com.example.bankaccounts.services.BankAccountsService;
 
 @RestController
-@RequestMapping("accounts/{accountId}/transactions")
+@RequestMapping("/accounts/{accountId}/transactions")
 public class TransactionsController {
 	
 	@Autowired
