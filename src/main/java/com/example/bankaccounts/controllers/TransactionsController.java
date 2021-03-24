@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,7 +33,15 @@ public class TransactionsController {
 	
 	@GetMapping
 	public ResponseEntity<Page<Transaction>> getAllTransactions(@PathVariable("accountId") long accountId, Pageable pageable) {
-		Page<Transaction> accountsPage = bankAccountsService.getAllTransactions(accountId, pageable);
-		return new ResponseEntity<Page<Transaction>>(accountsPage, new HttpHeaders(), HttpStatus.OK);
+		Page<Transaction> transactionsPage = bankAccountsService.getAllTransactions(accountId, pageable);
+		return new ResponseEntity<Page<Transaction>>(transactionsPage, new HttpHeaders(), HttpStatus.OK);
 	}
+	
+	@DeleteMapping("/{transactionId}")
+	public ResponseEntity<Object> deleteTransaction(@PathVariable("accountId") long accountId, 
+			@PathVariable("transactionId") long transactionId) {
+		bankAccountsService.deleteTransaction(accountId, transactionId);
+		return ResponseEntity.ok().build();
+	}
+	
 }

@@ -2,6 +2,7 @@ package com.example.bankaccounts.services;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -65,8 +66,9 @@ public class BankAccountsServiceImpl implements BankAccountsService {
 
 	@Override
 	public Account createTransaction(long id, Transaction transaction) {
-		Optional<Account> acc = bankAccountsRepository.findById(id);
-		Account account = acc.get();
+		Account account = bankAccountsRepository.findById(id)
+				.orElseThrow(RecordNotFoundException::new);
+		
 		switch (transaction.getType().toUpperCase()) {
 		case "DEPOSIT":
 			account.setBalance(Double.sum(account.getBalance(), transaction.getAmount()));
@@ -80,9 +82,10 @@ public class BankAccountsServiceImpl implements BankAccountsService {
 			break;
 		}
 		AccountUtils.computeAccountType(account);
-		transactionsRepository.save(transaction);
-		Account returnAccount = bankAccountsRepository.save(account);
-		return returnAccount;
+		
+		transaction.setAccount(account);
+		transaction = transactionsRepository.save(transaction);	
+		return bankAccountsRepository.findById(id).orElseThrow(RecordNotFoundException::new);
 	}
 
 	@Override
@@ -92,8 +95,25 @@ public class BankAccountsServiceImpl implements BankAccountsService {
 
 	@Override
 	public Page<Transaction> getAllTransactions(long accountId, Pageable pageable) {
-		//TODO filter transactions by account id
-		return transactionsRepository.findAll(pageable);
+		bankAccountsRepository.findById(accountId).orElseThrow(RecordNotFoundException::new);
+		return transactionsRepository.findAllByAccount_id(accountId, pageable);
+	}
+
+	@Override
+	public void deleteTransaction(long accountId, long transactionId) {
+		Account account = bankAccountsRepository.findById(accountId)
+				.orElseThrow(RecordNotFoundException::new);
+		
+		Predicate<Transaction> getTransactionFilter = t -> t.getId() == transactionId;  
+		
+		//validate if transaction exists
+		account.getTransactions().stream().filter(getTransactionFilter).findFirst()
+			.orElseThrow(RecordNotFoundException::new);
+		//remove transaction from account
+		account.getTransactions().removeIf(getTransactionFilter);
+		
+		//save account
+		bankAccountsRepository.save(account);	
 	}
 
 }

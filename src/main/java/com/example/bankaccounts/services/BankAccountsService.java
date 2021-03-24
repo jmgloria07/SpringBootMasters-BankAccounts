@@ -22,4 +22,6 @@ public interface BankAccountsService {
 	public Page<Transaction> getAllTransactions(long accountId, Pageable pageable);
 	
 	public Account createTransaction(long id, Transaction transaction);
+
+	public void deleteTransaction(long accountId, long transactionId);
 }

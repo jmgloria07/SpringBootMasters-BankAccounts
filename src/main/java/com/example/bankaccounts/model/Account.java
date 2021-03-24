@@ -50,7 +50,7 @@ public abstract class Account {
 	@JsonIgnore
 	private LocalDate createdDate;
 	
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "account")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "account", orphanRemoval = true)
 	private Set<Transaction> transactions;
 
 	public Account() {
@@ -127,5 +127,13 @@ public abstract class Account {
 
 	public void setCreatedDate(LocalDate createdDate) {
 		this.createdDate = createdDate;
+	}
+	
+	public Set<Transaction> getTransactions() {
+		return transactions;
+	}
+
+	public void setTransactions(Set<Transaction> transactions) {
+		this.transactions = transactions;
 	}
 }

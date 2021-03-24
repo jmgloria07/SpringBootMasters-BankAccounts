@@ -6,6 +6,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class Transaction extends AuditEntity {
 	
@@ -17,6 +19,7 @@ public class Transaction extends AuditEntity {
 	private double amount;
 	
 	@ManyToOne
+	@JsonIgnore
 	private Account account;
 
 	public Transaction() {
